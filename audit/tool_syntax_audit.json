@@ -1,0 +1,132 @@
+[
+  {
+    "file": "build_academy_gateway.mjs",
+    "ok": false,
+    "error": ""
+  },
+  {
+    "file": "build_enrichment_review.mjs",
+    "ok": false,
+    "error": ""
+  },
+  {
+    "file": "build_okdong_academies_xlsx.mjs",
+    "ok": false,
+    "error": ""
+  },
+  {
+    "file": "build_okdong_map.mjs",
+    "ok": false,
+    "error": ""
+  },
+  {
+    "file": "build_region_academy_map.mjs",
+    "ok": false,
+    "error": ""
+  },
+  {
+    "file": "build_region_public_enrichment.mjs",
+    "ok": false,
+    "error": ""
+  },
+  {
+    "file": "build_region_search_enrichment.mjs",
+    "ok": false,
+    "error": ""
+  },
+  {
+    "file": "build_uni_academy_gateway.mjs",
+    "ok": false,
+    "error": ""
+  },
+  {
+    "file": "check_map_web_intro.mjs",
+    "ok": false,
+    "error": ""
+  },
+  {
+    "file": "check_search_sample.mjs",
+    "ok": false,
+    "error": ""
+  },
+  {
+    "file": "check_standard_summary.mjs",
+    "ok": false,
+    "error": ""
+  },
+  {
+    "file": "check_target_level_summary.mjs",
+    "ok": false,
+    "error": ""
+  },
+  {
+    "file": "create_naver_detail_template.mjs",
+    "ok": false,
+    "error": ""
+  },
+  {
+    "file": "enrich_academy_sns_channels.mjs",
+    "ok": false,
+    "error": ""
+  },
+  {
+    "file": "enrich_academy_web_all.mjs",
+    "ok": false,
+    "error": ""
+  },
+  {
+    "file": "enrich_academy_web_sample.mjs",
+    "ok": false,
+    "error": ""
+  },
+  {
+    "file": "enrich_google_places.mjs",
+    "ok": false,
+    "error": ""
+  },
+  {
+    "file": "fetch_data_go_academy_sources.mjs",
+    "ok": false,
+    "error": ""
+  },
+  {
+    "file": "fetch_google_place_photos.mjs",
+    "ok": false,
+    "error": ""
+  },
+  {
+    "file": "fetch_naver_image_candidates.mjs",
+    "ok": false,
+    "error": ""
+  },
+  {
+    "file": "fetch_okdong_academies.mjs",
+    "ok": false,
+    "error": ""
+  },
+  {
+    "file": "merge_public_data_academies.mjs",
+    "ok": false,
+    "error": ""
+  },
+  {
+    "file": "serve_okdong_map.mjs",
+    "ok": false,
+    "error": ""
+  },
+  {
+    "file": "serve_region_maps.mjs",
+    "ok": false,
+    "error": ""
+  },
+  {
+    "file": "sync_naver_detail_csv_to_json.mjs",
+    "ok": false,
+    "error": ""
+  },
+  {
+    "file": "validate_uni_academy_map.mjs",
+    "ok": false,
+    "error": ""
+  }
+]
