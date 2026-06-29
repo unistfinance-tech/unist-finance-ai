@@ -13,19 +13,28 @@
       min-height: 100vh;
       font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", system-ui, sans-serif;
       color: var(--ink);
-      background: linear-gradient(rgba(247,250,252,.84), rgba(237,243,248,.9));
+      background: linear-gradient(rgba(247,250,252,.82), rgba(237,243,248,.9));
     }
     body::before {
       content: "";
       position: fixed;
       inset: 0;
       z-index: -1;
-      background: linear-gradient(145deg, rgba(255,255,255,.56), rgba(226,232,240,.76));
+      background: linear-gradient(145deg, rgba(255,255,255,.50), rgba(226,232,240,.72));
+      pointer-events: none;
+    }
+    .kakao-bg {
+      position: fixed;
+      inset: 0;
+      z-index: -3;
+      filter: grayscale(1) contrast(.98) brightness(1.08);
+      opacity: .72;
+      pointer-events: none;
     }
     .map-bg {
       position: fixed;
       inset: 50%;
-      z-index: -2;
+      z-index: -4;
       width: 768px;
       height: 768px;
       display: grid;
@@ -55,6 +64,7 @@
       letter-spacing: 0;
       font-weight: 950;
       word-break: keep-all;
+      text-shadow: 0 1px 0 rgba(255,255,255,.7);
     }
     .center { display: grid; align-content: center; min-height: 66vh; }
     .panel { width: min(430px, 84vw); margin: 0 auto; }
@@ -64,8 +74,8 @@
       gap: 12px;
       width: 100%;
     }
-    .region-card {
-      aspect-ratio: 1 / 1;
+    .region-card,
+    .request-card {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -73,14 +83,21 @@
       color: #111827;
       border: 4px solid var(--line);
       border-radius: 16px;
-      background: transparent;
+      background: rgba(255,255,255,.08);
+      backdrop-filter: blur(1px);
       transition: transform .16s ease, background .16s ease, box-shadow .16s ease;
-      font-size: clamp(22px, 5.8vw, 31px);
       font-weight: 950;
       letter-spacing: 0;
     }
-    .region-card:hover, .region-card:focus-visible {
-      background: rgba(255,255,255,.9);
+    .region-card {
+      aspect-ratio: 1 / 1;
+      font-size: clamp(22px, 5.8vw, 31px);
+    }
+    .region-card:hover,
+    .region-card:focus-visible,
+    .request-card:hover,
+    .request-card:focus-visible {
+      background: rgba(255,255,255,.88);
       box-shadow: inset 0 0 0 2px rgba(23,105,194,.16);
       transform: translateY(-1px);
       outline: none;
@@ -92,9 +109,110 @@
       border-style: dashed;
     }
     .region-card.pending:hover {
-      background: transparent;
+      background: rgba(255,255,255,.08);
       box-shadow: none;
       transform: none;
+    }
+    .request-card {
+      grid-column: 1 / -1;
+      min-height: 46px;
+      cursor: pointer;
+      font: inherit;
+      font-size: clamp(15px, 3.8vw, 20px);
+    }
+    .request-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      place-items: center;
+      padding: 18px;
+      background: rgba(17,24,39,.34);
+      backdrop-filter: blur(5px);
+    }
+    .request-modal.visible { display: grid; }
+    .request-panel {
+      width: min(440px, 100%);
+      border: 3px solid #111827;
+      border-radius: 18px;
+      background: rgba(255,255,255,.96);
+      box-shadow: 0 18px 42px rgba(15,23,42,.22);
+      padding: 18px;
+    }
+    .request-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .request-head h2 {
+      margin: 0;
+      font-size: 21px;
+      line-height: 1.2;
+      font-weight: 950;
+      color: #111827;
+    }
+    .request-close {
+      width: 34px;
+      height: 34px;
+      border: 2px solid #111827;
+      border-radius: 8px;
+      background: #fff;
+      color: #111827;
+      font-size: 18px;
+      font-weight: 950;
+      cursor: pointer;
+    }
+    .request-form {
+      display: grid;
+      gap: 10px;
+    }
+    .request-form label {
+      display: grid;
+      gap: 5px;
+      color: #334155;
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .request-form textarea {
+      width: 100%;
+      min-height: 142px;
+      border: 1.5px solid #CBD5E1;
+      border-radius: 10px;
+      background: #F8FAFC;
+      color: #111827;
+      font: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.45;
+      padding: 10px 11px;
+      resize: vertical;
+      outline: none;
+    }
+    .request-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .request-actions button {
+      border: 0;
+      border-radius: 10px;
+      padding: 12px 10px;
+      cursor: pointer;
+      font: inherit;
+      font-size: 15px;
+      font-weight: 950;
+    }
+    .request-send { background: #111827; color: #fff; }
+    .request-cancel { background: #E2E8F0; color: #111827; }
+    .request-status {
+      min-height: 18px;
+      color: #334155;
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.4;
     }
     footer {
       display: grid;
@@ -112,12 +230,13 @@
       .shell { padding: 62px 10px 14px; gap: 14px; }
       .center { min-height: 70vh; }
       .grid { gap: 10px; }
-      .region-card { border-radius: 14px; }
+      .region-card, .request-card { border-radius: 14px; }
       footer { font-size: 10px; }
     }
   </style>
 </head>
 <body>
+  <div id="kakaoBg" class="kakao-bg" aria-hidden="true"></div>
   <div class="map-bg" aria-hidden="true"><img src="https://tile.openstreetmap.org/11/1758/806.png" alt="" loading="eager" /><img src="https://tile.openstreetmap.org/11/1759/806.png" alt="" loading="eager" /><img src="https://tile.openstreetmap.org/11/1760/806.png" alt="" loading="eager" /><img src="https://tile.openstreetmap.org/11/1758/807.png" alt="" loading="eager" /><img src="https://tile.openstreetmap.org/11/1759/807.png" alt="" loading="eager" /><img src="https://tile.openstreetmap.org/11/1760/807.png" alt="" loading="eager" /><img src="https://tile.openstreetmap.org/11/1758/808.png" alt="" loading="eager" /><img src="https://tile.openstreetmap.org/11/1759/808.png" alt="" loading="eager" /><img src="https://tile.openstreetmap.org/11/1760/808.png" alt="" loading="eager" /></div>
   <main class="shell">
     <header><h1>유니스트 학부모를 위한 학원지도</h1></header>
@@ -129,6 +248,7 @@
         <a class="region-card guyeong" href="guyeong/guyeong_academy_map.html">구영리</a>
         <a class="region-card gulhwa" href="gulhwa/gulhwa_academy_map.html">굴화리</a>
         <div class="region-card pending" aria-disabled="true">추가예정</div>
+        <button class="request-card" id="requestCard" type="button">요청 및 문의</button>
       </div></div>
     </section>
     <footer>
@@ -137,5 +257,89 @@
       <span>v1.0</span>
     </footer>
   </main>
+  <div class="request-modal" id="requestModal" aria-hidden="true">
+    <div class="request-panel" role="dialog" aria-modal="true" aria-labelledby="requestTitle">
+      <div class="request-head">
+        <h2 id="requestTitle">요청 및 문의</h2>
+        <button class="request-close" id="requestClose" type="button" aria-label="닫기">X</button>
+      </div>
+      <form class="request-form" id="requestForm">
+        <label>요청내용
+          <textarea name="요청내용" required placeholder="수정할 학원명, 추가 요청, 오류 내용을 적어주세요."></textarea>
+        </label>
+        <div class="request-actions">
+          <button class="request-send" type="submit">보내기</button>
+          <button class="request-cancel" id="requestCancel" type="button">닫기</button>
+        </div>
+        <div class="request-status" id="requestStatus"></div>
+      </form>
+    </div>
+  </div>
+  <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=759ebc749a42125ac4510b7a866978d2&autoload=false"></script>
+  <script>
+    (() => {
+      const initKakaoBg = () => {
+        if (!window.kakao?.maps) return;
+        kakao.maps.load(() => {
+          const container = document.getElementById("kakaoBg");
+          const center = new kakao.maps.LatLng(35.5396, 129.3115);
+          const map = new kakao.maps.Map(container, {
+            center,
+            level: 8,
+            draggable: false,
+            scrollwheel: false,
+            disableDoubleClick: true,
+            disableDoubleClickZoom: true
+          });
+          map.setCopyrightPosition(kakao.maps.CopyrightPosition.BOTTOMRIGHT, true);
+        });
+      };
+      try { initKakaoBg(); } catch (error) {}
+
+      const mailCodes = [117,110,105,115,116,102,105,110,97,110,99,101,64,103,109,97,105,108,46,99,111,109];
+      const modal = document.getElementById("requestModal");
+      const form = document.getElementById("requestForm");
+      const status = document.getElementById("requestStatus");
+      const open = () => {
+        modal?.classList.add("visible");
+        modal?.setAttribute("aria-hidden", "false");
+        form?.querySelector("textarea")?.focus();
+      };
+      const close = () => {
+        modal?.classList.remove("visible");
+        modal?.setAttribute("aria-hidden", "true");
+        if (status) status.textContent = "";
+      };
+      document.getElementById("requestCard")?.addEventListener("click", open);
+      document.getElementById("requestClose")?.addEventListener("click", close);
+      document.getElementById("requestCancel")?.addEventListener("click", close);
+      modal?.addEventListener("click", (event) => {
+        if (event.target === modal) close();
+      });
+      form?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (status) status.textContent = "전송 중입니다...";
+        const to = String.fromCharCode(...mailCodes);
+        const data = new FormData(form);
+        data.set("_subject", "유니스트 학원지도 요청사항");
+        data.set("_template", "table");
+        data.set("_captcha", "false");
+        data.set("페이지", location.href);
+        try {
+          const response = await fetch("https://formsubmit.co/ajax/" + encodeURIComponent(to), {
+            method: "POST",
+            headers: { Accept: "application/json" },
+            body: data
+          });
+          if (!response.ok) throw new Error("send failed");
+          if (status) status.textContent = "요청사항이 접수되었습니다.";
+          form.reset();
+          window.setTimeout(close, 1100);
+        } catch (error) {
+          if (status) status.textContent = "전송이 막힌 경우 잠시 후 다시 시도해주세요.";
+        }
+      });
+    })();
+  </script>
 </body>
 </html>

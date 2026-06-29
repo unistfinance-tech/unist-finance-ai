@@ -2112,7 +2112,7 @@
       const shouldRemember = options.remember !== false;
       const wasMapFullscreen = document.body.classList.contains("map-fullscreen");
       returnToMapFullscreenAfterDetail = wasMapFullscreen;
-      returnMapViewAfterDetail = wasMapFullscreen ? { center: map.getCenter(), zoom: map.getZoom() } : null;
+      returnMapViewAfterDetail = { center: map.getCenter(), zoom: map.getZoom(), fullscreen: wasMapFullscreen };
       currentItemId = item.id;
       setMapFullscreen(false, { remember: false });
       document.querySelectorAll(".row.active").forEach((el) => el.classList.remove("active"));
@@ -2167,7 +2167,7 @@
         markers.forEach((entry) => {
           if (entry !== marker) entry.closeTooltip();
         });
-        map.setView(marker.getLatLng(), Math.max(map.getZoom(), 16), { animate: true });
+        map.setView(marker.getLatLng(), map.getZoom(), { animate: true });
         marker.openTooltip();
         window.setTimeout(() => markFocusedTooltip(marker), 60);
       }
@@ -2195,7 +2195,7 @@
         markers.forEach((entry) => {
           if (entry !== marker) entry.closeTooltip();
         });
-        map.setView(marker.getLatLng(), Math.max(map.getZoom(), 17), { animate: true });
+        map.setView(marker.getLatLng(), map.getZoom(), { animate: true });
         marker.openTooltip();
         window.setTimeout(() => markFocusedTooltip(marker), 60);
       }
@@ -2221,29 +2221,39 @@
       detailEl.classList.remove("visible");
       const shouldReturnToMap = returnToMapFullscreenAfterDetail;
       const returnMapView = returnMapViewAfterDetail;
-      render();
+      const restoreZoom = returnMapView ? returnMapView.zoom : map.getZoom();
       if (shouldReturnToMap) {
         setMapFullscreen(true, { remember: false });
         returnToMapFullscreenAfterDetail = false;
         returnMapViewAfterDetail = null;
         if (returnMapView) {
+          const focused = currentItemId ? markers.get(currentItemId) : null;
+          const center = focused ? focused.getLatLng() : returnMapView.center;
+          map.setView(center, restoreZoom, { animate: false });
           window.setTimeout(() => {
-            map.setView(returnMapView.center, returnMapView.zoom, { animate: false });
-            const focused = currentItemId ? markers.get(currentItemId) : null;
+            map.setView(center, restoreZoom, { animate: false });
             if (focused) {
               focused.openTooltip();
               markFocusedTooltip(focused);
             }
-          }, 220);
+          }, 80);
         }
       } else {
+        render({ preserveMapView: true });
         focusSelectedRowAfterDetailClose("smooth");
+        if (returnMapView) {
+          const focused = currentItemId ? markers.get(currentItemId) : null;
+          const center = focused ? focused.getLatLng() : returnMapView.center;
+          map.setView(center, restoreZoom, { animate: false });
+          window.setTimeout(() => map.setView(center, restoreZoom, { animate: false }), 80);
+        }
+        returnMapViewAfterDetail = null;
       }
       const marker = currentItemId ? markers.get(currentItemId) : null;
       if (marker) {
         if (realmEl.value) {
           marker.openTooltip();
-        window.setTimeout(() => markFocusedTooltip(marker), 60);
+          window.setTimeout(() => markFocusedTooltip(marker), 60);
         } else {
           marker.closeTooltip();
         }
@@ -2485,7 +2495,7 @@
       return (!query || haystack.includes(query)) && (!realm || item.displayRealm === realm);
     }
 
-    function render() {
+    function render(options = {}) {
       const query = searchEl.value.trim().toLowerCase();
       const realm = realmEl.value;
       const filtered = DATA.academies.filter((item) => matches(item, query, realm));
@@ -2552,7 +2562,7 @@
       if (currentItemId) {
         listEl.scrollTo({ top: 0, behavior: "auto" });
       }
-      if (bounds.length > 1) map.fitBounds(bounds, { padding: [36, 36], maxZoom: 16 });
+      if (!options.preserveMapView && bounds.length > 1) map.fitBounds(bounds, { padding: [36, 36], maxZoom: 16 });
       if (!filtered.length) {
         listEl.innerHTML = '<div class="row-meta" style="padding:14px">검색 결과가 없습니다.</div>';
       }
