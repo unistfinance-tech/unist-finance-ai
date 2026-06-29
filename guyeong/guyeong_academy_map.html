@@ -1855,6 +1855,7 @@
     let currentItemId = "";
     let focusedMarkerId = "";
     let returnToMapFullscreenAfterDetail = false;
+    let returnMapViewAfterDetail = null;
     let stateHistory = [];
     let stateIndex = -1;
     let applyingState = false;
@@ -2210,7 +2211,9 @@
 
     function showDetail(item, options = {}) {
       const shouldRemember = options.remember !== false;
-      returnToMapFullscreenAfterDetail = document.body.classList.contains("map-fullscreen");
+      const wasMapFullscreen = document.body.classList.contains("map-fullscreen");
+      returnToMapFullscreenAfterDetail = wasMapFullscreen;
+      returnMapViewAfterDetail = wasMapFullscreen ? { center: map.getCenter(), zoom: map.getZoom() } : null;
       currentItemId = item.id;
       setMapFullscreen(false, { remember: false });
       document.querySelectorAll(".row.active").forEach((el) => el.classList.remove("active"));
@@ -2309,8 +2312,7 @@
       activeRow.classList.add("active");
       listEl.scrollTo({ top: 0, behavior });
       if (window.matchMedia("(max-width: 820px)").matches) {
-        const targetTop = listEl.getBoundingClientRect().top + window.scrollY - 78;
-        window.scrollTo({ top: Math.max(0, targetTop), behavior });
+        window.scrollTo({ top: 0, behavior });
       } else {
         activeRow.scrollIntoView({ block: "nearest", behavior });
       }
@@ -2319,10 +2321,22 @@
     function closeDetailToActiveRow() {
       detailEl.classList.remove("visible");
       const shouldReturnToMap = returnToMapFullscreenAfterDetail;
+      const returnMapView = returnMapViewAfterDetail;
       render();
       if (shouldReturnToMap) {
         setMapFullscreen(true, { remember: false });
         returnToMapFullscreenAfterDetail = false;
+        returnMapViewAfterDetail = null;
+        if (returnMapView) {
+          window.setTimeout(() => {
+            map.setView(returnMapView.center, returnMapView.zoom, { animate: false });
+            const focused = currentItemId ? markers.get(currentItemId) : null;
+            if (focused) {
+              focused.openTooltip();
+              markFocusedTooltip(focused);
+            }
+          }, 220);
+        }
       } else {
         focusSelectedRowAfterDetailClose("smooth");
       }
