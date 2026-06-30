@@ -1875,6 +1875,77 @@
         padding-bottom: 4px !important;
       }
     }
+    /* list-expand-control-fix */
+    @media (max-width: 820px) {
+      .list-expand-handle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 31px;
+        min-width: 31px;
+        height: 24px;
+        margin-left: auto;
+        border: 1px solid #B9CCE2;
+        border-radius: 999px;
+        background: linear-gradient(180deg, #FFFFFF 0%, #EEF5FC 100%);
+        color: #1E3A5F;
+        font: inherit;
+        font-size: 14px;
+        font-weight: 900;
+        line-height: 1;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, .08);
+        touch-action: none;
+      }
+      body.list-expanded:not(.map-fullscreen) .map-wrap {
+        flex: 0 0 25dvh !important;
+        height: 25dvh !important;
+        min-height: 190px !important;
+        max-height: 245px !important;
+      }
+      body.list-expanded:not(.map-fullscreen) .sidebar {
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+      }
+      body.list-expanded:not(.map-fullscreen) .list-expand-handle {
+        background: #10233F;
+        border-color: #10233F;
+        color: #FFFFFF;
+      }
+    }
+    /* detail-expand-control-fix */
+    .detail-expand-handle {
+      display: none;
+    }
+    @media (max-width: 820px) {
+      body.map-fullscreen .detail-expand-handle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 31px;
+        min-width: 31px;
+        height: 24px;
+        margin-left: auto;
+        border: 1px solid #B9CCE2;
+        border-radius: 999px;
+        background: linear-gradient(180deg, #FFFFFF 0%, #EEF5FC 100%);
+        color: #1E3A5F;
+        font-size: 14px;
+        font-weight: 900;
+        line-height: 1;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, .08);
+        touch-action: none;
+      }
+      body.map-fullscreen.detail-expanded .detail.visible {
+        height: 60dvh !important;
+        max-height: 60dvh !important;
+      }
+      body.map-fullscreen.detail-expanded .detail-expand-handle {
+        background: #10233F;
+        border-color: #10233F;
+        color: #FFFFFF;
+      }
+    }
+
 
   </style>
 </head>
@@ -1907,6 +1978,7 @@
       </section>
       <div class="list-head">
         <div class="list-title"><strong>학원리스트</strong><span id="listCount">0곳</span></div>
+        <button id="listExpandHandle" class="list-expand-handle" type="button" aria-label="????? ?? ??">^</button>
         <button id="noticeButton" class="notice-button" type="button">유의사항</button>
       </div>
       <section id="list" class="list"></section>
@@ -1992,6 +2064,7 @@
     const homeStateEl = document.getElementById("homeState");
     const nextStateEl = document.getElementById("nextState");
     const mapViewToggleEl = document.getElementById("mapViewToggle");
+    const listExpandHandleEl = document.getElementById("listExpandHandle");
     const noticeButtonEl = document.getElementById("noticeButton");
     const noticeModalEl = document.getElementById("noticeModal");
     const noticeCloseEl = document.getElementById("noticeClose");
@@ -2378,6 +2451,7 @@
           <div>
             <h2>${escapeHtml(item.name)}</h2>
           </div>
+          <button class="detail-expand-handle" type="button" aria-label="Expand detail">^</button>
           <button class="close" title="닫기" aria-label="닫기">×</button>
         </div>
         <div class="links">
@@ -2402,7 +2476,10 @@
         </div>
       `;
       detailEl.querySelector(".close").addEventListener("click", closeDetailToActiveRow);
+      attachDetailExpandControl();
       attachDetailHomeGesture(detailEl.querySelector(".detail-head"));
+      setDetailExpanded(false);
+
       detailEl.classList.add("visible");
       detailEl.scrollTop = 0;
       updateScrollHome();
@@ -2460,6 +2537,51 @@
       } else {
         activeRow.scrollIntoView({ block: "nearest", behavior });
       }
+    }
+
+    function setDetailExpanded(enabled) {
+      document.body.classList.toggle("detail-expanded", enabled);
+      const button = detailEl.querySelector(".detail-expand-handle");
+      if (button) button.textContent = enabled ? "v" : "^";
+      window.setTimeout(() => map.invalidateSize(), 160);
+    }
+
+    function attachDetailExpandControl() {
+      const button = detailEl.querySelector(".detail-expand-handle");
+      if (!button) return;
+      let startY = 0;
+      let startX = 0;
+      let dragging = false;
+      const finish = (clientX, clientY) => {
+        if (!dragging) return;
+        dragging = false;
+        const deltaY = clientY - startY;
+        const deltaX = Math.abs(clientX - startX);
+        if (deltaY < -24 && Math.abs(deltaY) > deltaX * 1.2) setDetailExpanded(true);
+        if (deltaY > 24 && deltaY > deltaX * 1.2) setDetailExpanded(false);
+      };
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setDetailExpanded(!document.body.classList.contains("detail-expanded"));
+      });
+      button.addEventListener("touchstart", (event) => {
+        const touch = event.touches[0];
+        startY = touch.clientY;
+        startX = touch.clientX;
+        dragging = true;
+      }, { passive: true });
+      window.addEventListener("touchend", (event) => {
+        if (!event.changedTouches.length) return;
+        const touch = event.changedTouches[0];
+        finish(touch.clientX, touch.clientY);
+      }, { passive: true });
+      button.addEventListener("pointerdown", (event) => {
+        startY = event.clientY;
+        startX = event.clientX;
+        dragging = true;
+      }, { passive: true });
+      window.addEventListener("pointerup", (event) => finish(event.clientX, event.clientY), { passive: true });
     }
 
     function closeDetailToActiveRow() {
@@ -2683,6 +2805,60 @@
       bindPull(realmLegendEl);
     }
 
+    function setListExpanded(enabled) {
+      document.body.classList.toggle("list-expanded", enabled);
+      if (listExpandHandleEl) {
+        listExpandHandleEl.textContent = enabled ? "v" : "^";
+        listExpandHandleEl.setAttribute("aria-label", enabled ? "????? ?? ??" : "????? ?? ??");
+      }
+      window.setTimeout(() => map.invalidateSize(), 160);
+    }
+
+    function attachListExpandGesture() {
+      if (!listExpandHandleEl) return;
+      let startY = 0;
+      let startX = 0;
+      let dragging = false;
+      const finish = (clientX, clientY) => {
+        if (!dragging) return;
+        dragging = false;
+        const deltaY = clientY - startY;
+        const deltaX = Math.abs(clientX - startX);
+        if (deltaY < -24 && Math.abs(deltaY) > deltaX * 1.2) {
+          setListExpanded(true);
+        } else if (deltaY > 24 && deltaY > deltaX * 1.2) {
+          setListExpanded(false);
+        }
+      };
+      listExpandHandleEl.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setListExpanded(!document.body.classList.contains("list-expanded"));
+      });
+      listExpandHandleEl.addEventListener("touchstart", (event) => {
+        const touch = event.touches[0];
+        startY = touch.clientY;
+        startX = touch.clientX;
+        dragging = true;
+      }, { passive: true });
+      window.addEventListener("touchend", (event) => {
+        if (!event.changedTouches.length) return;
+        const touch = event.changedTouches[0];
+        finish(touch.clientX, touch.clientY);
+      }, { passive: true });
+      listExpandHandleEl.addEventListener("pointerdown", (event) => {
+        startY = event.clientY;
+        startX = event.clientX;
+        dragging = true;
+      }, { passive: true });
+      window.addEventListener("pointerup", (event) => finish(event.clientX, event.clientY), { passive: true });
+      mapWrapEl.addEventListener("click", () => {
+        if (document.body.classList.contains("list-expanded") && !detailEl.classList.contains("visible")) {
+          setListExpanded(false);
+        }
+      }, true);
+    }
+
     function updateScrollHome() {
       mapViewToggleEl.classList.add("visible");
     }
@@ -2867,6 +3043,7 @@
     render();
     rememberState();
     attachMapPullGesture();
+    attachListExpandGesture();
     updateScrollHome();
   </script>
 </body>
